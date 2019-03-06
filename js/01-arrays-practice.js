@@ -79,10 +79,12 @@
 //              "Iron Man",
 //              "Friday",
 //              "Ferris Bueller's Day Off"];
-//var i;
 //movies.sort();
-//for (i = 0; i < movies.length; i += 1) {
-//    window.console.log("movies[" + String(i) + "] = " + String(movies[i]));
+//var movie;
+//for (movie in movies) {
+//    if (movies.hasOwnProperty(movie)) {
+//        window.console.log("movies[" + String(movie) + "] = " + String(movies[movie]));
+//    }
 //}
 
 //STEP 8
