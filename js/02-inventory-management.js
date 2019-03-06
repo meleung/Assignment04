@@ -1,5 +1,12 @@
 /*eslint-env browser*/
 
+var prodField = {
+    SKU: 0,
+    PRODUCT: 1,
+    QUANTITY: 2,
+    COST: 3
+};
+
 function setInventory(inventory) {
     "use strict";
     localStorage.setItem("inventory", JSON.stringify(inventory));
@@ -7,16 +14,18 @@ function setInventory(inventory) {
 
 function getInventory() {
     "use strict";
-    var value = JSON.parse(localStorage.getItem("inventory"));
-    if (value === null) {
-        value = [[1, "Keyboard",     5,  4.99],
-                 [2, "Mouse",        10, 2.99],
-                 [9, "Monitor",      11, 99.99],
-                 [4, "Power Supply", 2,  24.99],
-                 [5, "Hard Drive",   8, 49.99]];
-        localStorage.setItem("inventory", JSON.stringify(value));
+    var inventory = JSON.parse(localStorage.getItem("inventory"));
+    
+    // If inventory is not stored in localStorage, create it with a default value.
+    if (inventory === null) {
+        inventory = [[2233, "Hat",     12,  14.99],
+                     [3223, "Socks",   36,   9.99],
+                     [4824, "Shirt",   10,  15.99],
+                     [6343, "Jeans",   22,  39.99],
+                     [9382, "Jacket",   5,  49.99]];
+        setInventory(inventory);
     }
-    return value;
+    return inventory;
 }
 
 function displayTitle() {
@@ -31,39 +40,63 @@ function displayTitle() {
     window.console.log("");
 }
 
-function viewInventory(arr) {
+function viewInventory(inventory) {
     "use strict";
-    arr.sort(function (a, b) {
-        return a[0] - b[0];
+    
+    // Sort by comparing sku numbers
+    inventory.sort(function (a, b) {
+        return a[prodField.SKU] - b[prodField.SKU];
     });
+    
     var i, output;
-    for (i = 0; i < arr.length; i += 1) {
-        output = String(arr[i][0]) + " " +
-                 arr[i][1] + " " +
-                 "(" + arr[i][2] + ") " +
-                 "$" + String(arr[i][3]);
+    for (i = 0; i < inventory.length; i += 1) {
+        output =  String(inventory[i][prodField.SKU]) + " ";
+        output += " ";
+        output += inventory[i][prodField.PRODUCT];
+        output += " ";
+        output += "(" + inventory[i][prodField.QUANTITY] + ")";
+        output += " ";
+        output += "$" + String(inventory[i][prodField.COST]);
         window.console.log(output);
     }
 }
 
-function updateInventory(arr) {
+function promptUserInteger(promptMessage) {
+    "use strict";
+    var input, value;
+    
+    input = window.prompt(promptMessage);
+    value = parseInt(input, 10);
+    
+    while (isNaN(value)) {
+        window.console.log("'" + input + "' is not valid. Please enter a number.");
+        input = window.prompt(promptMessage);
+        value = parseInt(input, 10);
+    }
+    return value;
+}
+
+function updateInventory(inventory) {
     "use strict";
     var sku, product, qty;
-    sku = parseInt(window.prompt("Enter an sku"), 10);
-    product = arr.filter(function (elem) {
-        return elem[0] === sku;
-    })[0];
-    window.console.log(product);
+    
+    sku = promptUserInteger("Enter an sku");
+    
+    // Search the inventory for the requested sku
+    product = inventory.filter(function (elem) {
+        return elem[prodField.SKU] === sku;
+    }).pop();
+    
     if (product) {
-    //if (arr.some(function (product) { return product[0] === sku; })) {
-        qty = parseInt(window.prompt("Enter a new quantity"), 10);
-        window.console.log(arr.indexOf(product));
-        arr[arr.indexOf(product)][2] = qty;
+        qty = promptUserInteger("Enter a new quantity");
+        
+        // Update the inventory.
+        inventory[inventory.indexOf(product)][prodField.QUANTITY] = qty;
+        // Write back updated inventory to localStorage.
+        setInventory(inventory);
     } else {
         window.console.log("sku " + sku + " does not exist in the inventory!");
     }
-    
-    //window.console.log("updateInventory()");
 }
 
 function main() {
@@ -74,25 +107,29 @@ function main() {
     
     displayTitle();
     
-    while (true) {
+    for(;;) {
         command = window.prompt("Enter command");
-        if (command !== null) {
-            if (command === "view") {
-                window.console.log("Command: " + command);
-                viewInventory(inventory);
-            } else if (command === "update") {
-                window.console.log("Command: " + command);
-                updateInventory(inventory);
-            } else if (command === "exit") {
-                break;
-            } else {
-                window.console.log("Invalid command: " + command);
-            }
-            window.console.log("");
-        } else {
+        
+        // Exit program on 'exit' command or cancel.
+        if (command === null || command === "exit") {
             break;
         }
+        
+        if (command === "view") {
+            window.console.log("Command: " + command);
+            viewInventory(inventory);
+        } else if (command === "update") {
+            window.console.log("Command: " + command);
+            updateInventory(inventory);
+        } else {
+            window.console.log("Invalid command: " + command);
+        }
+        window.console.log("");
     }
+    
+    // Write back inventory on exit.
     setInventory(inventory);
+    
+    window.console.log("Exiting the Product Inventory Management System");
 }
 main();
